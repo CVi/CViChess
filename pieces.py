@@ -25,6 +25,7 @@ class piece(object):
         pass
 
     def possibleMoves(self, pos):
+        raise Exception("Empty was Called!")
         return []
 
 class pawn(piece):
@@ -46,29 +47,29 @@ class pawn(piece):
                 return True
         return False
 
-        def postMove(self, stop):
-            if stop[0] == (7 if self.player == 0 else 7):
-                self.board.grid[stop[0]][stop[1]] = queen(self.board, self.player)
+    def postMove(self, stop):
+        if stop[0] == (7 if self.player == 0 else 7):
+            self.board.grid[stop[0]][stop[1]] = queen(self.board, self.player)
 
-        def possibleMoves(self, pos):
-            moves = []
-            options = []
-            if self.player == 0:
-                options.append((pos[0] + 1, pos[1]))
-                options.append((pos[0] + 1, pos[1] + 1))
-                options.append((pos[0] + 1, pos[1] - 1))
-                if pos[0] == 1:
-                    options.append((pos[0] + 2, pos[1]))
-            elif self.player == 1:
-                options.append((pos[0] - 1, pos[1]))
-                options.append((pos[0] - 1, pos[1] + 1))
-                options.append((pos[0] - 1, pos[1] - 1))
-                if pos[0] == 6:
-                    options.append((pos[0] - 2, pos[1]))
-            for move in options:
-                if self.LegalMove(pos, move):
-                    moves.append()
-            return moves
+    def possibleMoves(self, pos):
+        moves = []
+        options = []
+        if self.player == 0:
+            options.append((pos[0] + 1, pos[1]))
+            options.append((pos[0] + 1, pos[1] + 1))
+            options.append((pos[0] + 1, pos[1] - 1))
+            if pos[0] == 1:
+                options.append((pos[0] + 2, pos[1]))
+        elif self.player == 1:
+            options.append((pos[0] - 1, pos[1]))
+            options.append((pos[0] - 1, pos[1] + 1))
+            options.append((pos[0] - 1, pos[1] - 1))
+            if pos[0] == 6:
+                options.append((pos[0] - 2, pos[1]))
+        for move in options:
+            if self.LegalMove(pos, move):
+                moves.append(move)
+        return moves
 
 class king(piece):
     def __str__(self):
@@ -137,7 +138,7 @@ class queen(piece):
                 while pos[0] + (y * i) >= 0 and pos[0] + (y * i) <= 7 and\
                 pos[1] + (x * i) >= 0 and pos[1] + (x * i) <= 7 and\
                 self.LegalMove(pos, (pos[0] + (y * i), pos[1] + (x * i))):
-                    moves.append[(pos[0] + (y * i), pos[1] + (x * i))]
+                    moves.append((pos[0] + (y * i), pos[1] + (x * i)))
                     i += 1
         return moves
 
@@ -146,11 +147,12 @@ class bishop(piece):
         return "B" if self.player == 0 else "b"
     def LegalMove(self, start, stop):
         if abs(start[0] - stop[0]) == abs(start[1] - stop[1]) and abs(start[1] - stop[1]) > 0:
-            ym = (start[0] - stop[0]) / abs(start[0] - stop[0])
-            xm = (start[1] - stop[1]) / abs(start[1] - stop[1])
+            ym = (stop[0] - start[0]) / abs(start[0] - stop[0])
+            xm = (stop[1] - start[1]) / abs(start[1] - stop[1])
             for i in range(1, abs(start[1] - stop[1])):
                 if self.board.grid[start[0] + (ym * i)][start[1] + (xm * i)].player != None:
                     return False
+
             return self.board.grid[stop[0]][stop[1]].player != self.player
         else:
             return False
@@ -160,10 +162,10 @@ class bishop(piece):
         for x in [1, -1]:
             for y in [1, -1]:
                 i = 1
-                while pos[0] + (y * i) >= 0 and pos[0] + (y * i) <= 7 and\
-                pos[1] + (x * i) >= 0 and pos[1] + (x * i) <= 7 and\
+                while (pos[0] + (y * i)) >= 0 and (pos[0] + (y * i)) <= 7 and\
+                (pos[1] + (x * i)) >= 0 and (pos[1] + (x * i)) <= 7 and\
                 self.LegalMove(pos, (pos[0] + (y * i), pos[1] + (x * i))):
-                    moves.append[(pos[0] + (y * i), pos[1] + (x * i))]
+                    moves.append((pos[0] + (y * i), pos[1] + (x * i)))
                     i += 1
         return moves
 
@@ -208,7 +210,7 @@ class rook(piece):
             while pos[0] + (y * i) >= 0 and pos[0] + (y * i) <= 7 and\
                 pos[1] + (x * i) >= 0 and pos[1] + (x * i) <= 7 and\
                 self.LegalMove(pos, (pos[0] + (y * i), pos[1] + (x * i))):
-                    moves.append[(pos[0] + (y * i), pos[1] + (x * i))]
+                    moves.append((pos[0] + (y * i), pos[1] + (x * i)))
                     i += 1
         return moves
 
@@ -216,14 +218,15 @@ class knight(piece):
     def __str__(self):
         return "H" if self.player == 0 else "h"
     def LegalMove(self, start, stop):
-        if (abs(start[0] - stop[0]) == 2 and abs(start[0] - stop[0]) == 1) or\
-        (abs(start[0] - stop[0]) == 1 and abs(start[0] - stop[0]) == 2):
+        if (abs(start[0] - stop[0]) == 2 and abs(start[1] - stop[1]) == 1) or\
+        (abs(start[0] - stop[0]) == 1 and abs(start[1] - stop[1]) == 2):
             return self.board.grid[stop[0]][stop[1]].player != self.player
         return False
 
     def possibleMoves(self, pos):
         moves = []
         for (x, y) in [(2, 1), (2, -1), (-2, 1), (-2, -1), (1, 2), (1, -2), (-1, 2), (-1, -2)]:
-            if self.LegalMove(pos, (pos[0] + y, pos[1] + x)):
-                moves.append[(pos[0] + y, pos[1] + x)]
+            if (pos[0] + y >= 0 and pos[0] + y <= 7) and (pos[1] + x >= 0 and pos[1] + x <= 7) and\
+            self.LegalMove(pos, (pos[0] + y, pos[1] + x)):
+                moves.append((pos[0] + y, pos[1] + x))
         return moves

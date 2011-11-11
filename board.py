@@ -11,7 +11,9 @@ syslog.openlog("Python")
 class board(object):
     def __init__(self):
         self.empty = piece
-        self.grid = list([list([self.empty(self, None)] * 8)]) * 8
+        self.grid = []
+        for i in range(8):
+            self.grid.append(list([self.empty(self, None)] * 8))
         self.player = 0
         self.dirty = []
         self.cloned = None
@@ -20,8 +22,8 @@ class board(object):
         self.grid[0] = [
             rook(self, 0), knight(self, 0), bishop(self, 0), queen(self, 0),
             king(self, 0), bishop(self, 0), knight(self, 0), rook(self, 0)]
-        self.grid[1] = [pawn(self, 0)] * 8
-        self.grid[6] = [pawn(self, 1)] * 8
+        self.grid[1] = list([pawn(self, 0)]) * 8
+        self.grid[6] = list([pawn(self, 1)]) * 8
         self.grid[7] = [
             rook(self, 1), knight(self, 1), bishop(self, 1), king(self, 1),
             queen(self, 1), bishop(self, 1), knight(self, 1), rook(self, 1)]

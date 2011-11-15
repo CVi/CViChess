@@ -10,10 +10,10 @@ syslog.openlog("Python")
 
 class board(object):
     def __init__(self):
-        self.empty = piece
+        self.empty = piece(self, None)
         self.grid = []
         for i in range(8):
-            self.grid.append(list([self.empty(self, None)] * 8))
+            self.grid.append(list([self.empty] * 8))
         self.player = 0
         self.dirty = []
         self.cloned = None
@@ -39,7 +39,7 @@ class board(object):
         if self.grid[start[0]][start[1]].player == self.player and self.grid[start[0]][start[1]].LegalMove(start, stop):
             self.clone()
             #preform move
-            self.grid[start[0]][start[1]], self.grid[stop[0]][stop[1]] = self.empty(self, None), self.grid[start[0]][start[1]]
+            self.grid[start[0]][start[1]], self.grid[stop[0]][stop[1]] = self.empty, self.grid[start[0]][start[1]]
             self.grid[stop[0]][stop[1]].postMove(stop)
             #Dirty squares
             self.dirty.append(start)
@@ -60,7 +60,7 @@ class board(object):
     def findKing(self, player):
         for x in range(8):
             for y in range(8):
-                if self.grid[y][x].player == player and str(self.grid[y][x]).lower() == "k":
+                if self.grid[y][x].player == player and isinstance(self.grid[y][x], king):
                     return (y, x)
 
     def check(self, player):
@@ -76,8 +76,8 @@ class board(object):
         possibleMoves = []
         for piece in pieces:
             possibleMoves += map(
-                                 lambda to:((piece[1], piece[2]), to),
-                                 piece[0].possibleMoves((piece[1], piece[2]))
+                                 lambda to:((piece[0], piece[1]), to),
+                                 piece[2].possibleMoves((piece[0], piece[1]))
                                  )
         for move in possibleMoves:
             self.move(move[0], move[1])
@@ -86,6 +86,7 @@ class board(object):
                 return False
             self.abort()
         self.abort()
+        return True
 
 
     def abort(self):

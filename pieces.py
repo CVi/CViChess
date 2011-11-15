@@ -19,18 +19,17 @@ class piece(object):
         return False
 
     def __str__(self):
-        return " "
+        return "   "
 
     def postMove(self, stop):
         pass
 
     def possibleMoves(self, pos):
-        raise Exception("Empty was Called!")
         return []
 
 class pawn(piece):
     def __str__(self):
-        return "P" if self.player == 0 else "d"
+        return "PAW" if self.player == 0 else "paw"
     def LegalMove(self, start, stop):
         if start[1] == stop[1]:
             if stop[0] == start[0] + (1 if self.player == 0 else -1) and\
@@ -42,8 +41,8 @@ class pawn(piece):
                 self.board.grid[stop[0]][(start[0] + 1 if self.player == 0 else start[0] - 1)].player == None:
                 return True
         elif start[1] == stop[1] + 1 or start[1] == stop[1] - 1:
-            if stop[0] == start[0] + 1 - (2 * self.player) and\
-                self.board.grid[stop[0]][stop[1]].player == (1 if self.player == 0 else 1):
+            if stop[0] == (start[0] + (1 if self.player == 0 else -1)) and\
+                self.board.grid[stop[0]][stop[1]].player == (1 if self.player == 0 else 0):
                 return True
         return False
 
@@ -54,16 +53,16 @@ class pawn(piece):
     def possibleMoves(self, pos):
         moves = []
         options = []
-        if self.player == 0:
+        if self.player == 0 and pos[0] <= 6:
             options.append((pos[0] + 1, pos[1]))
-            options.append((pos[0] + 1, pos[1] + 1))
-            options.append((pos[0] + 1, pos[1] - 1))
+            if pos[1] < 7: options.append((pos[0] + 1, pos[1] + 1))
+            if pos[1] > 0: options.append((pos[0] + 1, pos[1] - 1))
             if pos[0] == 1:
                 options.append((pos[0] + 2, pos[1]))
-        elif self.player == 1:
+        elif self.player == 1 and pos[0] >= 1:
             options.append((pos[0] - 1, pos[1]))
-            options.append((pos[0] - 1, pos[1] + 1))
-            options.append((pos[0] - 1, pos[1] - 1))
+            if pos[1] < 7: options.append((pos[0] - 1, pos[1] + 1))
+            if pos[1] > 0: options.append((pos[0] - 1, pos[1] - 1))
             if pos[0] == 6:
                 options.append((pos[0] - 2, pos[1]))
         for move in options:
@@ -73,25 +72,24 @@ class pawn(piece):
 
 class king(piece):
     def __str__(self):
-        return "K" if self.player == 0 else "k"
+        return ("KIN" if self.player == 0 else "kin")
     def LegalMove(self, start, stop):
-        return (stop[0] == start[0] + 1 or stop[0] == start[0] - 1) and\
-            (stop[1] == start[1] + 1 or stop[1] == start[1] - 1) and\
+        return abs(stop[0] - start[0]) <= 1 and abs(stop[1] - start[1]) <= 1 and\
             self.board.grid[stop[0]][stop[1]].player != self.player
 
     def possibleMoves(self, pos):
         moves = []
         for x in [1, 0, -1]:
             for y in [1, 0, -1]:
-                if pos[0] + y >= 0 and pos[0] + y <= 7 and\
-                pos[1] + x >= 0 and pos[1] + x <= 7 and\
+                if (pos[0] + y) >= 0 and (pos[0] + y) <= 7 and\
+                (pos[1] + x) >= 0 and (pos[1] + x) <= 7 and\
                 self.LegalMove(pos, (pos[0] + y, pos[1] + x)):
                     moves.append((pos[0] + y, pos[1] + x))
         return moves
 
 class queen(piece):
     def __str__(self):
-        return "Q" if self.player == 0 else "q"
+        return "QUE" if self.player == 0 else "que"
     def LegalMove(self, start, stop):
         if start[0] == stop[0]:
             if start[1] - stop[1] > 0:
@@ -122,9 +120,11 @@ class queen(piece):
             return self.board.grid[stop[0]][stop[1]].player != self.player
 
         elif abs(start[0] - stop[0]) == abs(start[1] - stop[1]) and abs(start[1] - stop[1]) > 0:
-            ym = (start[0] - stop[0]) / abs(start[0] - stop[0])
-            xm = (start[1] - stop[1]) / abs(start[1] - stop[1])
+            ym = (stop[0] - start[0]) / abs(start[0] - stop[0])
+            xm = (stop[1] - start[1]) / abs(start[1] - stop[1])
             for i in range(1, abs(start[1] - stop[1])):
+                s = abs(start[1] - stop[1])
+                dbg = self.board.grid[start[0] + (ym * i)][start[1] + (xm * i)].player
                 if self.board.grid[start[0] + (ym * i)][start[1] + (xm * i)].player != None:
                     return False
             return self.board.grid[stop[0]][stop[1]].player != self.player
@@ -144,7 +144,7 @@ class queen(piece):
 
 class bishop(piece):
     def __str__(self):
-        return "B" if self.player == 0 else "b"
+        return "BIS" if self.player == 0 else "bis"
     def LegalMove(self, start, stop):
         if abs(start[0] - stop[0]) == abs(start[1] - stop[1]) and abs(start[1] - stop[1]) > 0:
             ym = (stop[0] - start[0]) / abs(start[0] - stop[0])
@@ -171,7 +171,7 @@ class bishop(piece):
 
 class rook(piece):
     def __str__(self):
-        return "R" if self.player == 0 else "r"
+        return "ROO" if self.player == 0 else "roo"
     def LegalMove(self, start, stop):
         if start[0] == stop[0]:
             if start[1] - stop[1] > 0:
@@ -216,7 +216,7 @@ class rook(piece):
 
 class knight(piece):
     def __str__(self):
-        return "H" if self.player == 0 else "h"
+        return "KNI" if self.player == 0 else "kni"
     def LegalMove(self, start, stop):
         if (abs(start[0] - stop[0]) == 2 and abs(start[1] - stop[1]) == 1) or\
         (abs(start[0] - stop[0]) == 1 and abs(start[1] - stop[1]) == 2):

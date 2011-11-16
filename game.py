@@ -96,7 +96,7 @@ def drawBoard(screen):
     screen.refresh()
 
 def drawSquare(screen, col, row, char):
-    x = 6 + (col * 4)
+    x = 5 + (col * 4)
     y = 2 + (row * 2)
     screen.addstr(y, x, char)
     screen.refresh()

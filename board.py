@@ -9,16 +9,37 @@ import syslog
 syslog.openlog("Python")
 
 class board(object):
+    """
+    Board object, containing all the rules needed for a chess game
+    """
+    M_OK = 1000
+    """Move completed"""
+    M_ILLEGAL = 1001
+    """Illegal Move"""
+    M_CHECK = 1002
+    """Illegal Move: self-check"""
     def __init__(self):
+        """
+        Initializes the board and places the pieces
+        """
         self.empty = piece(self, None)
+        """An instance of empty square object """
         self.grid = []
+        """The grid for the board List of Lists (y,x)"""
         for i in range(8):
             self.grid.append(list([self.empty] * 8))
         self.player = 0
+        """"Current player (1 or 0) initialized to 0"""
         self.dirty = []
+        """Dirty squares; 
+        To produce efficient User Interfaces the module provides
+        a list of squares that has changes made to them (y,x)"""
         self.cloned = None
-        self.cloned2 = None
+        """Undo data, used to save previous game state when performing a move
+        so it can be loaded if an undo is needed"""
 
+        #Place the chess pieces
+        #Pieces are autonomous objects and define their own rules for movement.
         self.grid[0] = [
             rook(self, 0), knight(self, 0), bishop(self, 0), queen(self, 0),
             king(self, 0), bishop(self, 0), knight(self, 0), rook(self, 0)]
@@ -32,8 +53,9 @@ class board(object):
         """
         Moves a piece from start to stop
         Complete!
-        @param start: tuple with 2 numbers from 0 to 7 (board coordiantes)
-        @param stop: tuple with 2 numbers from 0 to 7 (board coordiantes)
+        @param start: coordinate (y,x)
+        @param stop: coordinate (y,x)
+        @return: True if move completed, otherwise false
         """
         #Check if move is legal
         if self.grid[start[0]][start[1]].player == self.player and self.grid[start[0]][start[1]].LegalMove(start, stop):
@@ -49,7 +71,28 @@ class board(object):
         else:
             return False
 
+    def moveCheck(self, start, stop):
+        """
+        Wrapper to move piece from start to stop if move is legal
+        and do not result in checking yourself.
+        Returns a status code.
+        @param start: (y,x)
+        @param stop: (y,x)
+        @return: M_OK|M_ILLEGAL|M_CHECK
+        """
+        if not self.move(start, stop): return self.M_ILLEGAL
+        if self.check(1 if self.player == 0 else 0):
+            self.abort()
+            return self.M_CHECK
+        return self.M_OK
+
+
     def getPieces(self, player):
+        """
+        Gets all the pieces of the given player.
+        @param player: 0|1
+        @return (y,x,piece)
+        """
         ps = []
         for x in range(8):
             for y in range(8):
@@ -58,12 +101,22 @@ class board(object):
         return ps
 
     def findKing(self, player):
+        """
+        Returns the position of the given players king
+        @param player: 0|1
+        @return: (y,x)
+        """
         for x in range(8):
             for y in range(8):
                 if self.grid[y][x].player == player and isinstance(self.grid[y][x], king):
                     return (y, x)
 
     def check(self, player):
+        """
+        Checks if the given user is checked.
+        @param player: 0|1
+        @return bool
+        """
         pieces = self.getPieces(1 if player == 0 else 0)
         king = self.findKing(player)
         for piece in pieces:
@@ -72,6 +125,10 @@ class board(object):
         return False
 
     def mate(self):
+        """
+        Cheks if the current user (in check) is in a checkmate.
+        @return: bool
+        """
         pieces = self.getPieces(self.player)
         possibleMoves = []
         for piece in pieces:
@@ -88,6 +145,8 @@ class board(object):
         self.abort()
         return True
 
+    def checkmate(self):
+        pass
 
     def abort(self):
         if self.cloned:

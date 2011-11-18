@@ -108,8 +108,8 @@ def boolInput(txt):
         i = raw_input(txt + " Y/N").lower()
     return True if i == "y" else False
 
-
-while 1:
-    curses.wrapper(main)
-    print message
-    if not boolInput("Another Game?"): break
+if __name__ == "__main__":
+    while True:
+        curses.wrapper(main)
+        print message
+        if not boolInput("Another Game?"): break

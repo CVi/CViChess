@@ -18,6 +18,12 @@ class board(object):
     """Illegal Move"""
     M_CHECK = 1002
     """Illegal Move: self-check"""
+    S_OK = 2000
+    """Users king is safe"""
+    S_CHECK = 2001
+    """User has been checked"""
+    S_CHECKMATE = 2002
+    """User has Been checkmated"""
     def __init__(self):
         """
         Initializes the board and places the pieces
@@ -25,8 +31,8 @@ class board(object):
         self.empty = piece(self, None)
         """An instance of empty square object """
         self.grid = []
-        """The grid for the board List of Lists (y,x)"""
-        for i in range(8):
+        """The grid for the board List of Lists (y, x)"""
+        for i in range(8): #@UnusedVariable dummy Variable
             self.grid.append(list([self.empty] * 8))
         self.player = 0
         """"Current player (1 or 0) initialized to 0"""
@@ -52,7 +58,6 @@ class board(object):
     def move(self, start, stop):
         """
         Moves a piece from start to stop
-        Complete!
         @param start: coordinate (y,x)
         @param stop: coordinate (y,x)
         @return: True if move completed, otherwise false
@@ -80,10 +85,13 @@ class board(object):
         @param stop: (y,x)
         @return: M_OK|M_ILLEGAL|M_CHECK
         """
+        #Try to move, return errorcode if unsuccessful
         if not self.move(start, stop): return self.M_ILLEGAL
+        #Did that put the player in check, undo ad return errorcode. 
         if self.check(1 if self.player == 0 else 0):
             self.abort()
             return self.M_CHECK
+        #Otherwise return sucesscode
         return self.M_OK
 
 
@@ -113,7 +121,7 @@ class board(object):
 
     def check(self, player):
         """
-        Checks if the given user is checked.
+        Checks if the given player is checked.
         @param player: 0|1
         @return bool
         """
@@ -126,7 +134,7 @@ class board(object):
 
     def mate(self):
         """
-        Cheks if the current user (in check) is in a checkmate.
+        Checks if the current player (in check) is in a checkmate.
         @return: bool
         """
         pieces = self.getPieces(self.player)
@@ -146,13 +154,31 @@ class board(object):
         return True
 
     def checkmate(self):
-        pass
+        """
+        Checks if the current player is in check and if so is it a checkmate.
+        @return: S_OK|S_CHECK|S_CHECKMATE
+        """
+        if self.check(self.player):
+            if self.checkmate():
+                return self.S_CHECKMATE
+            else:
+                return self.S_CHECK
+        else:
+            return self.S_OK
 
     def abort(self):
+        """
+        Aborts the last move, used internally by "one move" simulation.
+        returns nothing
+        """
         if self.cloned:
             self.grid, self.cloned, self.player = self.cloned, None, 1 if self.player == 0 else 0
 
     def clone(self):
+        """
+        Clones the current state of the board, needed to be able to abort()
+        returns nothing
+        """
         self.cloned = []
         for row in self.grid:
             self.cloned.append(list(row))
